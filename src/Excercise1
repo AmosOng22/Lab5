@@ -1,0 +1,51 @@
+from threading import Thread
+from hal import hal_keypad as keypad
+from hal import hal_lcd as LCD
+from hal import hal_led as led
+import time
+from time import sleep
+lcd = LCD.lcd()
+lcd.lcd_clear()
+led.init()
+
+def key_pressed(key):
+    global delay
+    if key==1:
+        lcd.lcd_clear()
+        lcd.lcd_display_string("LED Control", 1)
+        lcd.lcd_display_string("Blink LED", 2)
+        delay=0.5
+    elif key==0:
+        delay=0
+        lcd.lcd_clear()
+        lcd.lcd_display_string("LED Control", 1)
+        lcd.lcd_display_string("OFF LED", 2)  
+
+
+def led_thread():
+    global delay
+    delay = 0
+    while(True):
+        if delay != 0:
+            led.set_output(0,1)
+            sleep(delay)
+            led.set_output(0, 0)
+            sleep(delay)
+
+def main():
+    lcd = LCD.lcd()
+    lcd.lcd_clear()
+    global delay
+    lcd.lcd_display_string("LED Control", 1)
+    lcd.lcd_display_string("0:Off 1:Blink", 2)    
+    keypad.init(key_pressed)
+    keypad_thread = Thread(target=keypad.get_key)
+    keypad_thread.start()
+    t1 = Thread(target=led_thread)
+    t1.start()
+     
+
+
+# Main entry point
+if __name__ == "__main__":
+    main()
